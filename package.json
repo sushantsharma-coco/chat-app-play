@@ -1,0 +1,26 @@
+{
+  "name": "chat-app-play",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sushantsharma-coco/chat-app-play.git"
+  },
+  "author": "sushant sharma",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sushantsharma-coco/chat-app-play/issues"
+  },
+  "homepage": "https://github.com/sushantsharma-coco/chat-app-play#readme",
+  "description": "",
+  "dependencies": {
+    "express": "^4.19.2",
+    "mongoose": "^8.5.1",
+    "nodemon": "^3.1.4",
+    "socket.io": "^4.7.5"
+  }
+}
