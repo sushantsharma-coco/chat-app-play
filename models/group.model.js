@@ -23,6 +23,10 @@ const groupSchema = new mongoose.Schema({
       trim: true,
     },
   ],
+  groupName: {
+    type: String,
+    required: true,
+  },
   membersCount: {
     type: Number,
     default: 1,
@@ -32,6 +36,10 @@ const groupSchema = new mongoose.Schema({
     ref: "Convo",
     required: true,
     trim: true,
+  },
+  isDeleted: {
+    type: Boolean,
+    default: false,
   },
 });
 
