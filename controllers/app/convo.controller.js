@@ -39,7 +39,6 @@ const sendMessage = async (req, res) => {
     if (!convo) throw new ApiError(500, "unable to send message to reciver");
 
     const ids = getOnlineSocketIds(reciver_id);
-    console.log(ids);
 
     io.to(ids).emit("newMessage", convo.chats[convo.chats.length - 1]);
 
@@ -82,33 +81,24 @@ const updateMessage = async (req, res) => {
     if (!message || message == "")
       throw new ApiError(400, "message not sent to backend");
 
-    const updt = await Convo.aggregate([
+    const updt = await Convo.findOneAndUpdate(
       {
-        $match: {
-          membersRef: {
-            $all: [req.user?._id, reciver_id],
-          },
-        },
-      },
-      {
-        $unwind: {
-          path: chats,
-        },
-      },
-      {
-        $match: {
-          senderRef: reciver_id,
-          "text._id": mongoose.Schema.ObjectId(message_id),
-        },
+        membersRef: { $all: [reciver_id, req.user?._id] },
+        "chats._id": mongoose.Types.ObjectId(message_id),
       },
       {
         $set: {
-          text: message,
+          "chats.text": message,
         },
       },
-    ]);
+      { new: true }
+    );
 
     if (!updt) throw new ApiError(404, "message not found to update");
+
+    const ids = getOnlineSocketIds(reciver_id);
+
+    io.to(ids).emit("updatedMessage", updt);
 
     return res
       .status(200)
