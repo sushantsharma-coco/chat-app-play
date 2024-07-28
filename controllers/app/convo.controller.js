@@ -39,8 +39,10 @@ const sendMessage = async (req, res) => {
     if (!convo) throw new ApiError(500, "unable to send message to reciver");
 
     const ids = getOnlineSocketIds(reciver_id);
+    const myIds = getOnlineSocketIds(req.user?._id);
 
     io.to(ids).emit("newMessage", convo.chats[convo.chats.length - 1]);
+    io.to(myIds).emit("sentMessage", convo.chats[convo.chats.length - 1]);
 
     return res
       .status(201)
@@ -54,7 +56,7 @@ const getMessages = async (req, res) => {
   try {
     const { reciver_id } = req.params;
 
-    const messages = await Convo.find({
+    const convo = await Convo.find({
       membersRef: {
         $all: [req.user?._id, reciver_id],
       },
@@ -62,9 +64,7 @@ const getMessages = async (req, res) => {
 
     return res
       .status(200)
-      .send(
-        new ApiResponse(200, messages, "all messages fetched successfully")
-      );
+      .send(new ApiResponse(200, convo, "all messages fetched successfully"));
   } catch (error) {
     catcher(error, res);
   }
@@ -84,11 +84,11 @@ const updateMessage = async (req, res) => {
     const updt = await Convo.findOneAndUpdate(
       {
         membersRef: { $all: [reciver_id, req.user?._id] },
-        "chats._id": mongoose.Types.ObjectId(message_id),
+        "chats._id": new mongoose.Types.ObjectId(message_id),
       },
       {
         $set: {
-          "chats.text": message,
+          text: message,
         },
       },
       { new: true }
@@ -97,8 +97,10 @@ const updateMessage = async (req, res) => {
     if (!updt) throw new ApiError(404, "message not found to update");
 
     const ids = getOnlineSocketIds(reciver_id);
+    const myIds = getOnlineSocketIds(req.user?._id);
 
     io.to(ids).emit("updatedMessage", updt);
+    io.to(myIds).emit("myUpdatedMessage", updt);
 
     return res
       .status(200)
@@ -116,18 +118,22 @@ const deleteMessage = async (req, res) => {
     const { reciver_id } = req.params;
     if (!reciver_id) throw new ApiError(400, "reciver_id not sent to backend");
 
-    let msgs = await Convo.findOne({
+    let msg = await Convo.findOneAndDelete({
       senderRef: { $all: [req.user?._id, reciver_id] },
-    }).select("messages");
+      "chats._id": new mongoose.Types.ObjectId(message_id),
+    });
 
-    msgs = msgs.filter((msg) => msg._id !== message_id);
-    await msgs.save();
+    const ids = getOnlineSocketIds(reciver_id);
+    const myIds = getOnlineSocketIds(req.user?._id);
+
+    io.to(ids).emit("deletedMessage", `${msg} deleted`);
+    io.to(myIds).emit("myDeletedMessage", `${msg} deleted`);
 
     return res
       .status(200)
-      .send(new ApiResponse(200, msgs, "message deleted successfully"));
+      .send(new ApiResponse(200, msg, "message deleted successfully"));
   } catch (error) {
-    catcher(error);
+    return res.status(500).send(new ApiError(500, error?.message));
   }
 };
 
