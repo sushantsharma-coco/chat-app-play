@@ -2,6 +2,7 @@ const { isValidObjectId } = require("mongoose");
 const User = require("../../models/user.model");
 const { ApiError } = require("../../utils/ApiError.utils");
 const { ApiResponse } = require("../../utils/ApiResponse.utils");
+const { catcher } = require("../../utils/catcher.utils");
 
 const options = {
   httpOnly: true,
@@ -10,6 +11,7 @@ const options = {
 
 const login = async (req, res) => {
   try {
+    console.log(req.body);
     const { email, name } = req.body;
 
     if (!email || email == "" || !name || name == "")
@@ -24,19 +26,15 @@ const login = async (req, res) => {
     return res
       .cookie("acccessToken", acccessToken, options)
       .status(200)
-      .send(new ApiResponse(200, user, "user logged-in successfully"));
-  } catch (error) {
-    console.error("error occured :", error?.message);
-
-    return res
-      .status(error?.statusCode || 500)
       .send(
         new ApiResponse(
-          error?.statusCode || 500,
-          error?.message || "internal server error",
-          error?.errors
+          200,
+          { user, acccessToken },
+          "user logged-in successfully"
         )
       );
+  } catch (error) {
+    catcher(error, res);
   }
 };
 
@@ -50,20 +48,11 @@ const logout = async (req, res) => {
       .status(200)
       .send(new ApiResponse(200, {}, "user logged out successfully"));
   } catch (error) {
-    console.error("error occured :", error?.message);
-
-    return res
-      .status(error?.statusCode || 500)
-      .send(
-        new ApiResponse(
-          error?.statusCode || 500,
-          error?.message || "internal server error",
-          error?.errors
-        )
-      );
+    catcher(error, res);
   }
 };
 
 module.exports = {
   login,
+  logout,
 };

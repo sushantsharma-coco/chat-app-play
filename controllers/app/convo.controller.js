@@ -1,34 +1,47 @@
 const { default: mongoose } = require("mongoose");
 const Convo = require("../../models/convo.model");
-const Group = require("../../models/group.model");
 const { ApiError } = require("../../utils/ApiError.utils");
 const { ApiResponse } = require("../../utils/ApiResponse.utils");
 const { catcher } = require("../../utils/catcher.utils");
+const { io, getOnlineSocketIds } = require("../../sockets/socket");
 
 const sendMessage = async (req, res) => {
   try {
     const { message } = req.body;
+    const { reciver_id } = req.params;
 
-    if (!message || !message.length())
+    if (!message || !message.length)
       throw new ApiError(400, "message was sent empty to backend");
 
-    let convo = await Convo.findOne({
-      membersRef: {
-        $all: [req.user?._id, reciver_id],
-      },
-    });
+    let obj = { senderRef: req.user?._id, text: message };
 
-    if (!convo)
+    let convo = await Convo.findOneAndUpdate(
+      {
+        membersRef: {
+          $all: [req.user?._id, reciver_id],
+        },
+      },
+      {
+        $push: {
+          chats: obj,
+        },
+      },
+      { new: true }
+    );
+
+    if (!convo) {
       convo = await Convo.create({
         membersRef: [req.user?._id, reciver_id],
-        "chats.senderRef": req.user?._id,
-        "chats.text": [],
+        chats: [obj],
       });
-
-    convo.chats.push(message);
-    await convo.save();
+    }
 
     if (!convo) throw new ApiError(500, "unable to send message to reciver");
+
+    const ids = getOnlineSocketIds(reciver_id);
+    console.log(ids);
+
+    io.to(ids).emit("newMessage", convo.chats[convo.chats.length - 1]);
 
     return res
       .status(201)

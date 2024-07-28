@@ -2,7 +2,10 @@ const mongoose = require("mongoose");
 
 const dbConnect = async () => {
   try {
-    const connectionObj = await mongoose.connect(process.env.DB_URL, {});
+    const connectionObj = await mongoose.connect(
+      "mongodb://127.0.0.1:27017/chat-app-play",
+      {}
+    );
 
     if (!connectionObj)
       throw new ApiError(500, "unable to connect with mongodb database");

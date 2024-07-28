@@ -254,6 +254,32 @@ const makeAdminSubAdmin = async (req, res) => {
   }
 };
 
+const sendMessageInGroup = async (req, res) => {
+  try {
+  } catch (error) {
+    catcher(error, res);
+  }
+};
+
+const getMessagesOfGroup = async (req, res) => {
+  try {
+  } catch (error) {
+    catcher(error, res);
+  }
+};
+const updateMessageInGroup = async (req, res) => {
+  try {
+  } catch (error) {
+    catcher(error, res);
+  }
+};
+const deleteMessageInGroup = async (req, res) => {
+  try {
+  } catch (error) {
+    catcher(error, res);
+  }
+};
+
 module.exports = {
   createGroup,
   getGroupDetails,
