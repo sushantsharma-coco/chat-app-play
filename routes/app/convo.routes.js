@@ -14,8 +14,11 @@ router.use(auth);
 router
   .route("/:reciver_id")
   .post(convoCheck, sendMessage)
-  .get(getMessages)
-  .patch(updateMessage)
-  .delete(deleteMessage);
+  .get(convoCheck, getMessages);
+
+router
+  .route("/:reciver_id/:message_id")
+  .patch(convoCheck, updateMessage)
+  .delete(convoCheck, deleteMessage);
 
 module.exports = { router };
