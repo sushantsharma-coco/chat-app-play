@@ -1,3 +1,6 @@
+const { isValidObjectId } = require("mongoose");
+const { ApiError } = require("../utils/ApiError.utils");
+
 const convoCheck = async (req, res, next) => {
   try {
     if (!req.user?._id || !isValidObjectId(req.user?._id))
@@ -15,7 +18,7 @@ const convoCheck = async (req, res, next) => {
     return res
       .status(error?.statusCode || 500)
       .send(
-        new ApiResponse(
+        new ApiError(
           error?.statusCode || 500,
           error?.message || "internal server error",
           error?.errors
@@ -23,3 +26,5 @@ const convoCheck = async (req, res, next) => {
       );
   }
 };
+
+module.exports = { convoCheck };

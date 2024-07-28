@@ -1,3 +1,5 @@
+const { ApiError } = require("./ApiError.utils");
+
 const catcher = async (error, res) => {
   if (error) {
     console.error("error occured :", error?.message);
@@ -5,7 +7,7 @@ const catcher = async (error, res) => {
     return res
       .status(error?.statusCode || 500)
       .send(
-        new ApiResponse(
+        new ApiError(
           error?.statusCode || 500,
           error?.message || "internal server error",
           error?.errors

@@ -13,7 +13,7 @@ const auth = async (req, res, next) => {
 
     const tokenData = await jwt.verify(
       accessToken,
-      process.env.ACCESS_TOKEN_SECRET
+      "process.env.ACCESS_TOKEN_SECRET"
     );
 
     if (tokenData?.exp && tokenData.exp < Date.now() / 1000)
